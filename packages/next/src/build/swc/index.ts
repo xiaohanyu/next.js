@@ -631,7 +631,7 @@ export interface UpdateInfo {
 export interface Project {
   update(options: Partial<ProjectOptions>): Promise<void>
 
-  gc(): void
+  gc(): Promise<void>
 
   entrypointsSubscribe(): AsyncIterableIterator<TurbopackResult<Entrypoints>>
 
@@ -879,7 +879,7 @@ function bindingToApi(binding: any, _wasm: boolean) {
     }
 
     gc() {
-      binding.projectGc(this._nativeProject)
+      return binding.projectGc(this._nativeProject)
     }
 
     entrypointsSubscribe() {
