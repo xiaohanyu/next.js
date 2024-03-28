@@ -665,10 +665,13 @@ async function renderToHTMLOrFlightImpl(
   const isNextExport = !!renderOpts.nextExport
   const { staticGenerationStore, requestStore } = baseCtx
   const { isStaticGeneration } = staticGenerationStore
-  // when static generation fails during PPR, we log the errors separately. We intentionally
-  // silence the error logger in this case to avoid double logging.
-  const silenceStaticGenerationErrors =
-    renderOpts.experimental.ppr && isStaticGeneration
+
+  const supportsPPR = renderOpts.experimental.supportsPPR === true
+
+  // When static generation fails during PPR, we log the errors separately. We
+  // intentionally silence the error logger in this case to avoid double
+  // logging.
+  const silenceStaticGenerationErrors = supportsPPR && isStaticGeneration
 
   const serverComponentsErrorHandler = createErrorHandler({
     source: ErrorHandlerSource.serverComponents,
@@ -746,7 +749,7 @@ async function renderToHTMLOrFlightImpl(
   const shouldProvideFlightRouterState =
     isRSCRequest &&
     (!isPrefetchRSCRequest ||
-      !renderOpts.experimental.ppr ||
+      !supportsPPR ||
       // Interception routes currently depend on the flight router state to
       // extract dynamic params.
       isInterceptionRouteAppPath(pagePath))
@@ -938,7 +941,7 @@ async function renderToHTMLOrFlightImpl(
       })
 
       const renderer = createStaticRenderer({
-        ppr: renderOpts.experimental.ppr,
+        supportsPPR,
         isStaticGeneration,
         // If provided, the postpone state should be parsed as JSON so it can be
         // provided to React.
@@ -1043,7 +1046,7 @@ async function renderToHTMLOrFlightImpl(
                 // We postponed but nothing dynamic was used. We resume the render now and immediately abort it
                 // so we can set all the postponed boundaries to client render mode before we store the HTML response
                 const resumeRenderer = createStaticRenderer({
-                  ppr: true,
+                  supportsPPR,
                   isStaticGeneration: false,
                   postponed: getDynamicHTMLPostponedState(postponed),
                   streamOptions: {

@@ -186,6 +186,7 @@ import { createProgress } from './progress'
 import { traceMemoryUsage } from '../lib/memory/trace'
 import { generateEncryptionKeyBase64 } from '../server/app-render/encryption-utils'
 import type { DeepReadonly } from '../shared/lib/deep-readonly'
+import { parsePPRConfig } from '../server/lib/experimental/ppr'
 
 interface ExperimentalBypassForInfo {
   experimentalBypassFor?: RouteHas[]
@@ -738,6 +739,8 @@ export default async function build(
             turborepoAccessTraceResult
           )
         )
+
+      const ppr = parsePPRConfig(config.experimental?.ppr)
 
       process.env.NEXT_DEPLOYMENT_ID = config.deploymentId || ''
       NextBuildContext.config = config
@@ -1800,7 +1803,6 @@ export default async function build(
           minimalMode: ciEnvironment.hasNextSupport,
           allowedRevalidateHeaderKeys:
             config.experimental.allowedRevalidateHeaderKeys,
-          experimental: { ppr: config.experimental.ppr === true },
         })
 
         incrementalCacheIpcPort = cacheInitialization.ipcPort
@@ -1878,7 +1880,7 @@ export default async function build(
               locales: config.i18n?.locales,
               defaultLocale: config.i18n?.defaultLocale,
               nextConfigOutput: config.output,
-              ppr: config.experimental.ppr === true,
+              pprConfig: config.experimental.ppr,
             })
         )
 
@@ -2091,7 +2093,7 @@ export default async function build(
                               : config.experimental.isrFlushToDisk,
                             maxMemoryCacheSize: config.cacheMaxMemorySize,
                             nextConfigOutput: config.output,
-                            ppr: config.experimental.ppr === true,
+                            pprConfig: config.experimental.ppr,
                           })
                         }
                       )
@@ -2166,7 +2168,6 @@ export default async function build(
                                 ])
                                 isStatic = true
                               } else if (
-                                isDynamic &&
                                 !hasGenerateStaticParams &&
                                 (appConfig.dynamic === 'error' ||
                                   appConfig.dynamic === 'force-static')
@@ -2626,13 +2627,6 @@ export default async function build(
                 })
               })
 
-              // Ensure we don't generate explicit app prefetches while in PPR.
-              if (config.experimental.ppr && appPrefetchPaths.size > 0) {
-                throw new Error(
-                  "Invariant: explicit app prefetches shouldn't generated with PPR"
-                )
-              }
-
               for (const [originalAppPath, page] of appPrefetchPaths) {
                 defaultMap[page] = {
                   page: originalAppPath,
@@ -2744,9 +2738,7 @@ export default async function build(
             // When this is an app page and PPR is enabled, the route supports
             // partial pre-rendering.
             const experimentalPPR =
-              !isRouteHandler && config.experimental.ppr === true
-                ? true
-                : undefined
+              !isRouteHandler && ppr.isSupported(page) ? true : undefined
 
             // this flag is used to selectively bypass the static cache and invoke the lambda directly
             // to enable server actions on static routes
@@ -2833,7 +2825,8 @@ export default async function build(
 
                 finalPrerenderRoutes[route] = {
                   ...routeMeta,
-                  experimentalPPR,
+                  experimentalPPR:
+                    !isRouteHandler && ppr.isSupported(page) ? true : undefined,
                   experimentalBypassFor: bypassFor,
                   initialRevalidateSeconds: revalidate,
                   srcRoute: page,
