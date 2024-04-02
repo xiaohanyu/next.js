@@ -19,6 +19,11 @@ type FileSystemCacheContext = Omit<
 > & {
   fs: CacheFs
   serverDistDir: string
+
+  /**
+   * pprEnabled is true when PPR has been enabled either globally or just for
+   * some pages via the `incremental` option.
+   */
   pprEnabled: boolean
 }
 

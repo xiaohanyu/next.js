@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import FileSystemCache from 'next/dist/server/lib/incremental-cache/file-system-cache'
-import { nodeFs } from 'next/dist/server/lib/node-fs-methods'
+import FileSystemCache from 'next/src/server/lib/incremental-cache/file-system-cache'
+import { nodeFs } from 'next/src/server/lib/node-fs-methods'
 
 const cacheDir = fileURLToPath(new URL('./cache', import.meta.url))
 
@@ -35,7 +35,7 @@ describe('FileSystemCache', () => {
       {}
     )
 
-    expect((await fsCache.get('icon.png')).value).toEqual({
+    expect((await fsCache.get('icon.png'))?.value).toEqual({
       body: binary,
       headers: {
         'Content-Type': 'image/png',
@@ -86,7 +86,7 @@ describe('FileSystemCache (isrMemory 0)', () => {
       kindHint: 'fetch',
     })
 
-    expect(res.value).toEqual({
+    expect(res?.value).toEqual({
       kind: 'FETCH',
       data: {
         headers: {},
@@ -115,7 +115,7 @@ describe('FileSystemCache (isrMemory 0)', () => {
       kindHint: 'fetch',
     })
 
-    expect(res.value).toEqual({
+    expect(res?.value).toEqual({
       kind: 'FETCH',
       data: { headers: {}, body: '1700056381', status: 200, url: '' },
       revalidate: 30,
