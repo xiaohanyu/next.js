@@ -129,7 +129,10 @@ const getDerivedTags = (pathname: string): string[] => {
 
 export function addImplicitTags(staticGenerationStore: StaticGenerationStore) {
   const newTags: string[] = []
-  const { pagePath, urlPathname } = staticGenerationStore
+  const {
+    pagePath,
+    url: { pathname },
+  } = staticGenerationStore
 
   if (!Array.isArray(staticGenerationStore.tags)) {
     staticGenerationStore.tags = []
@@ -147,10 +150,8 @@ export function addImplicitTags(staticGenerationStore: StaticGenerationStore) {
     }
   }
 
-  if (urlPathname) {
-    const parsedPathname = new URL(urlPathname, 'http://n').pathname
-
-    const tag = `${NEXT_CACHE_IMPLICIT_TAG_ID}${parsedPathname}`
+  if (pathname) {
+    const tag = `${NEXT_CACHE_IMPLICIT_TAG_ID}${pathname}`
     if (!staticGenerationStore.tags?.includes(tag)) {
       staticGenerationStore.tags.push(tag)
     }
@@ -298,7 +299,7 @@ function createPatchedFetcher(
           // we only want to warn if the user is explicitly setting a cache value
           if (!(isRequestInput && _cache === 'default')) {
             Log.warn(
-              `fetch for ${fetchUrl} on ${staticGenerationStore.urlPathname} specified "cache: ${_cache}" and "revalidate: ${curRevalidate}", only one should be specified.`
+              `fetch for ${fetchUrl} on ${staticGenerationStore.url.pathname} specified "cache: ${_cache}" and "revalidate: ${curRevalidate}", only one should be specified.`
             )
           }
           _cache = undefined
@@ -321,7 +322,7 @@ function createPatchedFetcher(
 
         revalidate = validateRevalidate(
           curRevalidate,
-          staticGenerationStore.urlPathname
+          staticGenerationStore.url.pathname
         )
 
         const _headers = getRequestMeta('headers')
@@ -647,8 +648,8 @@ function createPatchedFetcher(
 
           if (!staticGenerationStore.forceStatic && cache === 'no-store') {
             const dynamicUsageReason = `no-store fetch ${input}${
-              staticGenerationStore.urlPathname
-                ? ` ${staticGenerationStore.urlPathname}`
+              staticGenerationStore.url.pathname
+                ? ` ${staticGenerationStore.url.pathname}`
                 : ''
             }`
 
@@ -678,8 +679,8 @@ function createPatchedFetcher(
               next.revalidate === 0
             ) {
               const dynamicUsageReason = `revalidate: 0 fetch ${input}${
-                staticGenerationStore.urlPathname
-                  ? ` ${staticGenerationStore.urlPathname}`
+                staticGenerationStore.url.pathname
+                  ? ` ${staticGenerationStore.url.pathname}`
                   : ''
               }`
 
