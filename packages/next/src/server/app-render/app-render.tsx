@@ -1394,6 +1394,18 @@ async function renderToHTMLOrFlightImpl(
     metadata.flightData = flightData
   }
 
+  // Collect all the headers that were added during the render, we want to merge
+  // them with the headers that were set during the prerender.
+  if (supportsPPR) {
+    const headers = res.getHeaders()
+    if (Object.keys(headers).length > 0) {
+      metadata.headers ??= {}
+
+      // NOTE: This will override any headers already set in the metadata.
+      Object.assign(metadata.headers, headers)
+    }
+  }
+
   // If force static is specifically set to false, we should not revalidate
   // the page.
   if (staticGenerationStore.forceStatic === false) {

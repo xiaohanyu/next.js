@@ -117,12 +117,6 @@ export async function exportAppPage(
 
     const headers: OutgoingHttpHeaders = { ...metadata.headers }
 
-    // When PPR is enabled, we should grab the headers from the mocked response
-    // and add it to the headers.
-    if (renderOpts.experimental.supportsPPR) {
-      Object.assign(headers, res.getHeaders())
-    }
-
     if (fetchTags) {
       headers[NEXT_CACHE_TAGS_HEADER] = fetchTags
     }
