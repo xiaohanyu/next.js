@@ -23,7 +23,7 @@ export async function createIncrementalCache({
   distDir: string
   dir: string
   enabledDirectories: NextEnabledDirectories
-  pprEnabled?: boolean
+  pprEnabled: boolean
   flushToDisk?: boolean
 }) {
   // Custom cache handler overrides.

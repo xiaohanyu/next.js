@@ -386,6 +386,7 @@ export default class NextNodeServer extends BaseServer {
         !this.minimalMode && this.nextConfig.experimental.isrFlushToDisk,
       getPrerenderManifest: () => this.getPrerenderManifest(),
       CurCacheHandler: CacheHandler,
+      pprEnabled: this.renderOpts.experimental.pprEnabled,
     })
   }
 

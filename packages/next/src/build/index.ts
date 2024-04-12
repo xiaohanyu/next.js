@@ -186,7 +186,7 @@ import { createProgress } from './progress'
 import { traceMemoryUsage } from '../lib/memory/trace'
 import { generateEncryptionKeyBase64 } from '../server/app-render/encryption-utils'
 import type { DeepReadonly } from '../shared/lib/deep-readonly'
-import { isPPRSupported } from '../server/lib/experimental/ppr'
+import { isPPREnabled, isPPRSupported } from '../server/lib/experimental/ppr'
 
 interface ExperimentalBypassForInfo {
   experimentalBypassFor?: RouteHas[]
@@ -1801,6 +1801,7 @@ export default async function build(
           minimalMode: ciEnvironment.hasNextSupport,
           allowedRevalidateHeaderKeys:
             config.experimental.allowedRevalidateHeaderKeys,
+          pprEnabled: isPPREnabled(config.experimental.ppr),
         })
 
         incrementalCacheIpcPort = cacheInitialization.ipcPort
