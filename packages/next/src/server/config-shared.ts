@@ -468,11 +468,6 @@ export type ExportPathMap = {
     /**
      * @internal
      */
-    _isAppPrefetch?: boolean
-
-    /**
-     * @internal
-     */
     _isDynamicError?: boolean
 
     /**

@@ -34,7 +34,6 @@ const zExportMap: zod.ZodType<ExportPathMap> = z.record(
     query: z.any(), // NextParsedUrlQuery
     // private optional properties
     _isAppDir: z.boolean().optional(),
-    _isAppPrefetch: z.boolean().optional(),
     _isDynamicError: z.boolean().optional(),
     _supportsPPR: z.boolean().optional(),
   })

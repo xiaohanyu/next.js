@@ -1733,7 +1733,6 @@ export default async function build(
       const additionalSsgPaths = new Map<string, Array<string>>()
       const additionalSsgPathsEncoded = new Map<string, Array<string>>()
       const appStaticPaths = new Map<string, Array<string>>()
-      const appPrefetchPaths = new Map<string, string>()
       const appStaticPathsEncoded = new Map<string, Array<string>>()
       const appNormalizedPaths = new Map<string, string>()
       const appDynamicParamPaths = new Set<string>()
@@ -2185,18 +2184,6 @@ export default async function build(
                             appDynamicParamPaths.add(originalAppPath)
                           }
                           appDefaultConfigs.set(originalAppPath, appConfig)
-
-                          // Only generate the app prefetch rsc if the route is
-                          // an app page.
-                          if (
-                            !isStatic &&
-                            !isAppRouteRoute(originalAppPath) &&
-                            !isDynamicRoute(originalAppPath) &&
-                            !supportsPPR &&
-                            !isInterceptionRoute
-                          ) {
-                            appPrefetchPaths.set(originalAppPath, page)
-                          }
                         }
                       } else {
                         if (isEdgeRuntime(pageRuntime)) {
@@ -2628,15 +2615,6 @@ export default async function build(
                   }
                 })
               })
-
-              for (const [originalAppPath, page] of appPrefetchPaths) {
-                defaultMap[page] = {
-                  page: originalAppPath,
-                  query: {},
-                  _isAppDir: true,
-                  _isAppPrefetch: true,
-                }
-              }
 
               if (i18n) {
                 for (const page of [
