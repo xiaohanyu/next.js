@@ -666,6 +666,22 @@ async function renderToHTMLOrFlightImpl(
   const { staticGenerationStore, requestStore } = baseCtx
   const { isStaticGeneration } = staticGenerationStore
 
+  /**
+   * Sets the headers on the response object. If we're generating static HTML,
+   * we store the headers in the metadata object as well so that they can be
+   * persisted.
+   */
+  const setHeader: ServerResponse['setHeader'] = isStaticGeneration
+    ? (name: string, value: string) => {
+        res.setHeader(name, value)
+
+        metadata.headers ??= {}
+        metadata.headers[name] = res.getHeader(name)
+
+        return res
+      }
+    : res.setHeader.bind(res)
+
   const supportsPPR = renderOpts.experimental.supportsPPR === true
 
   // When static generation fails during PPR, we log the errors separately. We
@@ -910,28 +926,22 @@ async function renderToHTMLOrFlightImpl(
 
       const isResume = !!renderOpts.postponed
 
-      const onHeaders = staticGenerationStore.prerenderState
-        ? // During prerender we write headers to metadata
-          (headers: Headers) => {
-            headers.forEach((value, key) => {
-              metadata.headers ??= {}
-              metadata.headers[key] = value
-            })
-          }
-        : isStaticGeneration || isResume
-        ? // During static generation and during resumes we don't
-          // ask React to emit headers. For Resume this is just not supported
-          // For static generation we know there will be an entire HTML document
-          // output and so moving from tag to header for preloading can only
-          // server to alter preloading priorities in unwanted ways
-          undefined
-        : // During dynamic renders that are not resumes we write
-          // early headers to the response
-          (headers: Headers) => {
-            headers.forEach((value, key) => {
-              res.appendHeader(key, value)
-            })
-          }
+      const onHeaders =
+        // During prerenders, we want to capture the headers created so we can
+        // persist them to the metadata.
+        staticGenerationStore.prerenderState ||
+        // During static generation and during resumes we don't
+        // ask React to emit headers. For Resume this is just not supported
+        // For static generation we know there will be an entire HTML document
+        // output and so moving from tag to header for preloading can only
+        // server to alter preloading priorities in unwanted ways
+        (!isStaticGeneration && !isResume)
+          ? (headers: Headers) => {
+              headers.forEach((value, key) => {
+                setHeader(key, value)
+              })
+            }
+          : undefined
 
       const getServerInsertedHTML = makeGetServerInsertedHTML({
         polyfills,
@@ -1192,14 +1202,14 @@ async function renderToHTMLOrFlightImpl(
             // If there were mutable cookies set, we need to set them on the
             // response.
             if (appendMutableCookies(headers, err.mutableCookies)) {
-              res.setHeader('set-cookie', Array.from(headers.values()))
+              setHeader('set-cookie', Array.from(headers.values()))
             }
           }
           const redirectUrl = addPathPrefix(
             getURLFromRedirectError(err),
             renderOpts.basePath
           )
-          res.setHeader('Location', redirectUrl)
+          setHeader('Location', redirectUrl)
         }
 
         const is404 = res.statusCode === 404
@@ -1392,18 +1402,6 @@ async function renderToHTMLOrFlightImpl(
   const flightData = await flightDataResolver()
   if (flightData) {
     metadata.flightData = flightData
-  }
-
-  // Collect all the headers that were added during the render, we want to merge
-  // them with the headers that were set during the prerender.
-  if (supportsPPR) {
-    const headers = res.getHeaders()
-    if (Object.keys(headers).length > 0) {
-      metadata.headers ??= {}
-
-      // NOTE: This will override any headers already set in the metadata.
-      Object.assign(metadata.headers, headers)
-    }
   }
 
   // If force static is specifically set to false, we should not revalidate
