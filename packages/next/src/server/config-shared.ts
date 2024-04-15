@@ -11,6 +11,7 @@ import type { WEB_VITALS } from '../shared/lib/utils'
 import type { NextParsedUrlQuery } from './request-meta'
 import type { SizeLimit } from '../../types'
 import type { SwrDelta } from './lib/revalidate'
+import type { ExperimentalPPRConfig } from './lib/experimental/ppr'
 
 export type NextConfigComplete = Required<NextConfig> & {
   images: Required<ImageConfigComplete>
@@ -179,15 +180,6 @@ export interface NextJsWebpackConfig {
     context: WebpackConfigContext
   ): any
 }
-
-/**
- * If set to `incremental`, only those leaf pages that export
- * `experimental_ppr = true` will have partial prerendering enabled. If any
- * page exports this value as `false` or does not export it at all will not
- * have partial prerendering enabled. If set to a boolean, it the options for
- * `experimental_ppr` will be ignored.
- */
-export type ExperimentalPPRConfig = boolean | 'incremental'
 
 export interface ExperimentalConfig {
   prerenderEarlyExit?: boolean

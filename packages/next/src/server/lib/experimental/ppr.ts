@@ -1,5 +1,12 @@
-import type { AppConfig } from '../../../build/utils'
-import type { ExperimentalPPRConfig } from '../../config-shared'
+/**
+ * If set to `incremental`, only those leaf pages that export
+ * `experimental_ppr = true` will have partial prerendering enabled. If any
+ * page exports this value as `false` or does not export it at all will not
+ * have partial prerendering enabled. If set to a boolean, it the options for
+ * `experimental_ppr` will be ignored.
+ */
+
+export type ExperimentalPPRConfig = boolean | 'incremental'
 
 /**
  * Returns true if partial prerendering is enabled for the application.
@@ -26,7 +33,9 @@ export function isPPREnabled(
  */
 export function isPPRSupported(
   config: ExperimentalPPRConfig | undefined,
-  appConfig: AppConfig
+  appConfig: {
+    experimental_ppr?: boolean
+  }
 ): boolean {
   // If the config is undefined or false, partial prerendering is disabled.
   if (typeof config === 'undefined' || config === false) {

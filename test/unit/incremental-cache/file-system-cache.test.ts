@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import FileSystemCache from 'next/src/server/lib/incremental-cache/file-system-cache'
-import { nodeFs } from 'next/src/server/lib/node-fs-methods'
+import FileSystemCache from 'next/dist/server/lib/incremental-cache/file-system-cache'
+import { nodeFs } from 'next/dist/server/lib/node-fs-methods'
 
 const cacheDir = fileURLToPath(new URL('./cache', import.meta.url))
 

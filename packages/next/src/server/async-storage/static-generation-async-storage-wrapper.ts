@@ -3,9 +3,9 @@ import type { StaticGenerationStore } from '../../client/components/static-gener
 import type { AsyncLocalStorage } from 'async_hooks'
 import type { IncrementalCache } from '../lib/incremental-cache'
 import type { RenderOptsPartial } from '../app-render/types'
-import type { FetchMetric } from '../base-http'
 
 import { createPrerenderState } from '../../server/app-render/dynamic-rendering'
+import type { FetchMetric } from '../base-http'
 
 export type StaticGenerationContext = {
   urlPathname: string

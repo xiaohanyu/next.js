@@ -1,8 +1,5 @@
-import type {
-  ExperimentalPPRConfig,
-  NextConfig,
-  NextConfigComplete,
-} from '../server/config-shared'
+import type { NextConfig, NextConfigComplete } from '../server/config-shared'
+import type { ExperimentalPPRConfig } from '../server/lib/experimental/ppr'
 import type { AppBuildManifest } from './webpack/plugins/app-build-manifest-plugin'
 import type { AssetBinding } from './webpack/loaders/get-module-build-info'
 import type {
